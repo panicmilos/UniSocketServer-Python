@@ -1,7 +1,8 @@
 class Server(object):
 
     def __init__(self, port: int):
-        self.__init__(self, port)
+        super().__init__()
+        self._port = port
 
     def listen(self):
         pass
