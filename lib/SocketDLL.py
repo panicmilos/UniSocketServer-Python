@@ -9,7 +9,7 @@ class SocketDLL(object):
     def __init__(self, server_dll):
         super().__init__()
         self._ServerDLL = server_dll
-        self.on_data = CB_DATA_TYPE(self._on_data_cb)
+        self._data_callback = CB_DATA_TYPE(self._data_read_callback)
         self._session_ptr = None
         self._receivers = ""
         self._num_of_receivers = 0
@@ -17,6 +17,9 @@ class SocketDLL(object):
 
     def set_socket(self, session_ptr):
         self._session_ptr = session_ptr
+
+    def get_data_callback(self):
+        return self._data_callback
 
     def disconnect(self):
         self._ServerDLL.disconnect(self._session_ptr)
@@ -63,15 +66,20 @@ class SocketDLL(object):
         self._receivers = ""
         self._num_of_receivers = 0
 
-    def _on_data_cb(self, data):
+    def _data_read_callback(self, data: str):
         data_string = data.decode("utf-8")
         try:
             data_dict = json.loads(data_string)
-            event_name = data_dict["event_name"]
-            data = data_dict["data"]
-            handler = self._event_handlers[event_name]
-            handler(data)
         except Exception as e:
             print("Invalid JSON format in: " + data_string)
-            print(e)
+            print("Exception", e)
+            return -1
+        self._handle_data_event(data_dict)
         return 0
+
+    def _handle_data_event(self, data_dict):
+        event_name = data_dict["event_name"]
+        data = data_dict["data"]
+        handler = self._event_handlers[event_name]
+        if handler:
+            handler(data)

@@ -4,7 +4,6 @@ from lib.SocketDLL import SocketDLL
 from lib.Socket import Socket
 
 CB_F_TYPE = CFUNCTYPE(c_int, c_void_p)
-CB_DATA_TYPE = CFUNCTYPE(c_char_p)
 
 dll_path = os.path.abspath(__file__)
 dll_path = os.path.realpath(dll_path)
@@ -31,7 +30,7 @@ class ServerDLL(object):
 
     def _on_new_client_cb(self, session_ptr):
         socket = SocketDLL(self._ServerDLL)
-        socket_ptr = self._ServerDLL.new_socket(session_ptr, socket.on_data)
+        socket_ptr = self._ServerDLL.new_socket(session_ptr, socket.get_data_callback())
         socket.set_socket(socket_ptr)
         if self._on_connection_cb:
             self._on_connection_cb(Socket(socket))
